@@ -1,5 +1,5 @@
 # app.py
-import streamlit as st  # MUST be at the very top
+import streamlit as st  # MUST be at the top
 import pandas as pd
 import pickle
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, matthews_corrcoef, confusion_matrix, roc_auc_score
@@ -10,16 +10,7 @@ import glob
 # App title
 # -------------------------
 st.title("ML Classification App")
-st.write("Upload dataset and select model")
-
-# -------------------------
-# Show current working directory (optional)
-# -------------------------
-try:
-    cwd = os.getcwd()
-    st.write("Current working directory:", cwd)
-except Exception as e:
-    st.warning(f"Cannot access working directory: {e}")
+st.write("Upload your dataset and select a trained model to classify")
 
 # -------------------------
 # File uploader
@@ -27,7 +18,7 @@ except Exception as e:
 uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
 # -------------------------
-# Dynamically list all model files
+# Dynamically list all model files in 'model/' folder
 # -------------------------
 model_folder = "model"
 if not os.path.exists(model_folder):
@@ -39,14 +30,19 @@ if not model_files:
     st.error("No model files (.pkl) found in the model folder!")
     st.stop()
 
-# Map friendly names to paths
-model_map = {os.path.splitext(os.path.basename(f))[0]: f for f in model_files}
+# Map friendly names for dropdown
+def friendly_name(file_path):
+    # e.g., "logistic.pkl" -> "Logistic Regression"
+    name = os.path.splitext(os.path.basename(file_path))[0]
+    return name.replace("_", " ").title()
+
+model_map = {friendly_name(f): f for f in model_files}
 
 # Dropdown to select model
 model_choice = st.selectbox("Choose Model", list(model_map.keys()))
 
 # -------------------------
-# Process uploaded file and run predictions
+# Process uploaded file and make predictions
 # -------------------------
 if uploaded_file:
     data = pd.read_csv(uploaded_file)
@@ -57,13 +53,13 @@ if uploaded_file:
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
-    # Load selected model safely
+    # Load the selected model
     model_path = model_map[model_choice]
     try:
         with open(model_path, "rb") as f:
             model = pickle.load(f)
     except Exception as e:
-        st.error(f"Error loading model {model_choice}: {e}")
+        st.error(f"Error loading model '{model_choice}': {e}")
         st.stop()
 
     # Make predictions
