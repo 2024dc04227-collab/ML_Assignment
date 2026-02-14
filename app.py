@@ -1,9 +1,9 @@
 # app.py
 import streamlit as st  # MUST be at the top
+import os
 import pandas as pd
 import pickle
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, matthews_corrcoef, confusion_matrix, roc_auc_score
-import os
 import glob
 
 # -------------------------
@@ -77,3 +77,4 @@ if uploaded_file:
     # Confusion matrix
     st.subheader("Confusion Matrix")
     st.write(confusion_matrix(y, pred))
+
